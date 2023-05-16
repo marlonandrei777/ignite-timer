@@ -61,3 +61,29 @@ export const HistoryList = styled.div`
     }
   }
 `;
+
+const STATUS_COLORS = {
+  yellow: "yellow-500",
+  green: "green-500",
+  red: "red-500",
+} as const;
+
+type StatusProps = {
+  /* keyof: as cores disponiveis q tenho sao 
+  as chaves(key) do objeto a cima */
+  statusColor: /* "yellow" | "green" | "red"; */ keyof typeof STATUS_COLORS;
+};
+
+export const Status = styled.span<StatusProps>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &::before {
+    content: " ";
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: ${(props) => props.theme[STATUS_COLORS[props.statusColor]]};
+  }
+`;
