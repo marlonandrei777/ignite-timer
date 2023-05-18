@@ -1,5 +1,7 @@
 import { Play } from 'phosphor-react'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as zod from 'zod'
 import {
   CountdownContainer,
   FormContainer,
@@ -10,11 +12,27 @@ import {
   TaskInput,
 } from './styles'
 
+/* schema de validacao. validar os dados do form baseado no formato a baixo */
+const newCyrcleFormValidateionSchema = zod.object({
+  /* task vai ser uma string onde vai ter no minimo 1 caracter, e se n tiver
+  vamos colocar um alerta "Informe a Tarefa" */
+  task: zod.string().min(1, 'Informe a Tarefa'),
+  minutesAmount: zod.number().min(5).max(60),
+})
+
 export function Home() {
-  const { register, handleSubmit, watch } = useForm()
+  /* passamos para o useFrom o objeto de configuracoes */
+  const { register, handleSubmit, watch } = useForm({
+    /* passamos para dentro de zod zodResolver, qual é o schema de validacao,
+    ou seja, de q forma queremos validar os dados q temos nos inputs,
+    as regras de validação */
+    resolver: zodResolver(newCyrcleFormValidateionSchema),
+  })
 
   /* data: dados dos nossos inputs do formulario */
-  function handleCreateNewCicle(data: any) { }
+  function handleCreateNewCicle(data: any) {
+    console.log(data)
+  }
 
   /* observando o campo de task */
   const task = watch('task')
