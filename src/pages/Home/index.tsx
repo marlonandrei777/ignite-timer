@@ -20,13 +20,22 @@ const newCyrcleFormValidateionSchema = zod.object({
   minutesAmount: zod.number().min(5).max(60),
 })
 
+type NewCycleFromData = {
+  task: string
+  minutesAmount: number
+}
+
 export function Home() {
   /* passamos para o useFrom o objeto de configuracoes */
-  const { register, handleSubmit, watch } = useForm({
+  const { register, handleSubmit, watch } = useForm<NewCycleFromData>({
     /* passamos para dentro de zod zodResolver, qual é o schema de validacao,
     ou seja, de q forma queremos validar os dados q temos nos inputs,
     as regras de validação */
     resolver: zodResolver(newCyrcleFormValidateionSchema),
+    defaultValues: {
+      task: '',
+      minutesAmount: 0,
+    },
   })
 
   /* data: dados dos nossos inputs do formulario */
