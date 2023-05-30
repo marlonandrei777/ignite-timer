@@ -20,7 +20,10 @@ const newCyrcleFormValidateionSchema = zod.object({
   /* task vai ser uma string onde vai ter no minimo 1 caracter, e se n tiver
   vamos colocar um alerta "Informe a Tarefa" */
   task: zod.string().min(1, 'Informe a Tarefa'),
-  minutesAmount: zod.number().min(5).max(60),
+  minutesAmount: zod
+    .number()
+    .min(1, 'O ciclo precisa ser de no mínimo 5 minutos')
+    .max(60, 'O ciclo precisa ser de no máximo 60 minutos'),
 })
 
 /* tipagem dos inputs do form tirados de dentro do schema do zod */
@@ -31,6 +34,7 @@ interface Cycle {
   minutesAmount: number
   startDate: Date
   interruptedDate?: Date
+  finishedDate?: Date
 }
 
 export function Home() {
@@ -53,15 +57,36 @@ export function Home() {
   /* tentar com find */
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
+  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
+
   // intervalor
   useEffect(() => {
     let interval: number
 
     if (activeCycle) {
       interval = setInterval(() => {
-        setAmountSecondsPassed(
-          differenceInSeconds(new Date(), activeCycle.startDate),
+        const secondsDifference = differenceInSeconds(
+          new Date(),
+          activeCycle.startDate,
         )
+
+        if (secondsDifference >= totalSeconds) {
+          setCycles((state) =>
+            state.map((cycle) => {
+              if (cycle.id === activeCycleId) {
+                return { ...cycle, finishedDate: new Date() }
+              } else {
+                return cycle
+              }
+            }),
+          )
+
+          setAmountSecondsPassed(totalSeconds)
+
+          clearInterval(interval)
+        } else {
+          setAmountSecondsPassed(secondsDifference)
+        }
       }, 1000)
     }
 
@@ -70,7 +95,7 @@ export function Home() {
     return () => {
       clearInterval(interval)
     }
-  }, [activeCycle])
+  }, [activeCycle, totalSeconds, activeCycleId])
 
   /* data: dados dos nossos inputs do formulario */
   function handleCreateNewCicle(data: NewCycleFromData) {
@@ -95,8 +120,8 @@ export function Home() {
 
   // parando o ciclo e colocando a hora do ciclo pausado na variavel interruptedDate
   function handleInterruptCycle() {
-    setCycles(
-      cycles.map((cycle) => {
+    setCycles((state) =>
+      state.map((cycle) => {
         if (cycle.id === activeCycleId) {
           return { ...cycle, interruptedDate: new Date() }
         } else {
@@ -108,7 +133,6 @@ export function Home() {
     setActiveCycleId(null)
   }
 
-  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
 
   const minutesAmount = Math.floor(currentSeconds / 60)
@@ -158,7 +182,7 @@ export function Home() {
             placeholder="00"
             disabled={!!activeCycle}
             step={5} // vai pulando o contado de 5 em 5
-            min={5} // vai definir o contadosetado em 5, sendo o seu valor minimo tbm
+            min={1} // vai definir o contadosetado em 5, sendo o seu valor minimo tbm
             max={60}
             {...register('minutesAmount', { valueAsNumber: true })}
           />
