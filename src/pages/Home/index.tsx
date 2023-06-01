@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { HandPalm, Play } from 'phosphor-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import * as zod from 'zod'
 import {
   HomeContainer,
   StartCountdownButton,
@@ -12,19 +11,6 @@ import { differenceInSeconds } from 'date-fns'
 import { NewCycleForm } from './components/NewCycleForm'
 import { CountDown } from './components/CountDown'
 
-/* schema de validacao. validar os dados do form baseado no formato a baixo */
-const newCyrcleFormValidateionSchema = zod.object({
-  /* task vai ser uma string onde vai ter no minimo 1 caracter, e se n tiver
-  vamos colocar um alerta "Informe a Tarefa" */
-  task: zod.string().min(1, 'Informe a Tarefa'),
-  minutesAmount: zod
-    .number()
-    .min(1, 'O ciclo precisa ser de no mínimo 5 minutos')
-    .max(60, 'O ciclo precisa ser de no máximo 60 minutos'),
-})
-
-/* tipagem dos inputs do form tirados de dentro do schema do zod */
-type NewCycleFromData = zod.infer<typeof newCyrcleFormValidateionSchema>
 interface Cycle {
   id: string
   task: string
@@ -37,62 +23,9 @@ interface Cycle {
 export function Home() {
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
-  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
-
-  /* passamos para o useFrom o objeto de configuracoes */
-  const { register, handleSubmit, watch, reset } = useForm<NewCycleFromData>({
-    /* passamos para dentro de zod zodResolver, qual é o schema de validacao,
-    ou seja, de q forma queremos validar os dados q temos nos inputs,
-    as regras de validação */
-    resolver: zodResolver(newCyrcleFormValidateionSchema),
-    defaultValues: {
-      task: '',
-      minutesAmount: 0,
-    },
-  })
 
   /* tentar com find */
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
-
-  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
-
-  // intervalor
-  useEffect(() => {
-    let interval: number
-
-    if (activeCycle) {
-      interval = setInterval(() => {
-        const secondsDifference = differenceInSeconds(
-          new Date(),
-          activeCycle.startDate,
-        )
-
-        if (secondsDifference >= totalSeconds) {
-          setCycles((state) =>
-            state.map((cycle) => {
-              if (cycle.id === activeCycleId) {
-                return { ...cycle, finishedDate: new Date() }
-              } else {
-                return cycle
-              }
-            }),
-          )
-
-          setAmountSecondsPassed(totalSeconds)
-
-          clearInterval(interval)
-        } else {
-          setAmountSecondsPassed(secondsDifference)
-        }
-      }, 1000)
-    }
-
-    /* quando executar o useeffect de novo, vamos fazer algo
-    para limpar/resetar o useEfect anterior */
-    return () => {
-      clearInterval(interval)
-    }
-  }, [activeCycle, totalSeconds, activeCycleId])
 
   /* data: dados dos nossos inputs do formulario */
   function handleCreateNewCicle(data: NewCycleFromData) {
@@ -154,7 +87,11 @@ export function Home() {
     <HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCicle)} action="">
         <NewCycleForm />
-        <CountDown />
+        <CountDown
+          activeCycle={activeCycle}
+          setCycles={setCycles}
+          activeCycleId={activeCycleId}
+        />
 
         {activeCycle ? (
           <StopCountdownButton onClick={handleInterruptCycle} type="button">
