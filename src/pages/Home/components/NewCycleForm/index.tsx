@@ -1,4 +1,4 @@
-import { useFormAction } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { FormContainer, MinutesAmounthImput, TaskInput } from './styles'
 import * as zod from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -19,17 +19,16 @@ type NewCycleFromData = zod.infer<typeof newCyrcleFormValidateionSchema>
 
 export function NewCycleForm() {
   /* passamos para o useFrom o objeto de configuracoes */
-  const { register, handleSubmit, watch, reset } =
-    useFormAction<NewCycleFromData>({
-      /* passamos para dentro de zod zodResolver, qual é o schema de validacao,
+  const { register, handleSubmit, watch, reset } = useForm<NewCycleFromData>({
+    /* passamos para dentro de zod zodResolver, qual é o schema de validacao,
     ou seja, de q forma queremos validar os dados q temos nos inputs,
     as regras de validação */
-      resolver: zodResolver(newCyrcleFormValidateionSchema),
-      defaultValues: {
-        task: '',
-        minutesAmount: 0,
-      },
-    })
+    resolver: zodResolver(newCyrcleFormValidateionSchema),
+    defaultValues: {
+      task: '',
+      minutesAmount: 0,
+    },
+  })
 
   return (
     <FormContainer>
