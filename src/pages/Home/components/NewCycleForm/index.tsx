@@ -1,34 +1,11 @@
-import { useForm } from 'react-hook-form'
 import { FormContainer, MinutesAmounthImput, TaskInput } from './styles'
-import * as zod from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-
-/* schema de validacao. validar os dados do form baseado no formato a baixo */
-const newCyrcleFormValidateionSchema = zod.object({
-  /* task vai ser uma string onde vai ter no minimo 1 caracter, e se n tiver
-  vamos colocar um alerta "Informe a Tarefa" */
-  task: zod.string().min(1, 'Informe a Tarefa'),
-  minutesAmount: zod
-    .number()
-    .min(1, 'O ciclo precisa ser de no mínimo 5 minutos')
-    .max(60, 'O ciclo precisa ser de no máximo 60 minutos'),
-})
-
-/* tipagem dos inputs do form tirados de dentro do schema do zod */
-type NewCycleFromData = zod.infer<typeof newCyrcleFormValidateionSchema>
+import { useContext } from 'react'
+import { CyclesContext } from '../..'
+import { useFormContext } from 'react-hook-form'
 
 export function NewCycleForm() {
-  /* passamos para o useFrom o objeto de configuracoes */
-  const { register, handleSubmit, watch, reset } = useForm<NewCycleFromData>({
-    /* passamos para dentro de zod zodResolver, qual é o schema de validacao,
-    ou seja, de q forma queremos validar os dados q temos nos inputs,
-    as regras de validação */
-    resolver: zodResolver(newCyrcleFormValidateionSchema),
-    defaultValues: {
-      task: '',
-      minutesAmount: 0,
-    },
-  })
+  const { activeCycle } = useContext(CyclesContext)
+  const { register } = useFormContext()
 
   return (
     <FormContainer>
@@ -57,7 +34,7 @@ export function NewCycleForm() {
         placeholder="00"
         disabled={!!activeCycle}
         step={5} // vai pulando o contado de 5 em 5
-        min={1} // vai definir o contadosetado em 5, sendo o seu valor minimo tbm
+        min={5} // vai definir o contadosetado em 5, sendo o seu valor minimo tbm
         max={60}
         {...register('minutesAmount', { valueAsNumber: true })}
       />
