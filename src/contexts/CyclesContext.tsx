@@ -76,8 +76,6 @@ export function CyclesContextProvider({
     setCycles((state) => [...state, newCycle])
     setActiveCycleId(id)
     setAmountSecondsPassed(0)
-
-    /* reset() */
   }
 
   // parando o ciclo e colocando a hora do ciclo pausado na variavel interruptedDate
