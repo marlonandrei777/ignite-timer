@@ -1,17 +1,9 @@
 import { ReactNode, createContext, useReducer, useState } from 'react'
+import { ActionTypes, Cycle, cyclesReducer } from '../reducers/cycles'
 
 interface CreateCycleData {
   task: string
   minutesAmount: number
-}
-
-interface Cycle {
-  id: string
-  task: string
-  minutesAmount: number
-  startDate: Date
-  interruptedDate?: Date
-  finishedDate?: Date
 }
 
 // quais sao as infos q vamos armazenar dentro do contexto
@@ -33,55 +25,16 @@ type CylclesContextProviderProps = {
   children: ReactNode
 }
 
-type CyclesStage = {
-  cycles: Cycle[]
-  activeCycleId: string | null
-}
-
 // crianco o componente principal
 export function CyclesContextProvider({
   children,
 }: CylclesContextProviderProps) {
   // agr com o dispatch, vamos disparar a ação
-  const [cyclesState, dispatch] = useReducer(
-    (state: CyclesStage, action: any) => {
-      switch (action.type) {
-        case 'ADD_NEW_CYCLE':
-          return {
-            ...state,
-            cycles: [...state.cycles, action.payload.newCycle],
-            activeCycleId: action.payload.newCycle.id,
-          }
-        case 'INTERRUPT_CURRENT_CYCLE':
-          return {
-            ...state,
-            cycles: state.cycles.map((cycle) => {
-              if (cycle.id === state.activeCycleId) {
-                return { ...cycle, interruptedDate: new Date() }
-              } else {
-                return cycle
-              }
-            }),
-            activeCycleId: null,
-          }
-        case 'MARK_CURRENT_CYCLE_AS_FINISHED':
-          return {
-            ...state,
-            cycles: state.cycles.map((cycle) => {
-              if (cycle.id === state.activeCycleId) {
-                return { ...cycle, finishedDate: new Date() }
-              } else {
-                return cycle
-              }
-            }),
-            activeCycleId: null,
-          }
-        default:
-          return state
-      }
-    },
-    { cycles: [], activeCycleId: null },
-  )
+  // cyclesReducer -> funcao onde ta os reducers em uma page separada. cycles.ts
+  const [cyclesState, dispatch] = useReducer(cyclesReducer, {
+    cycles: [],
+    activeCycleId: null,
+  })
 
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
 
@@ -94,7 +47,7 @@ export function CyclesContextProvider({
 
   function markCurrentCycleAsfinished() {
     dispatch({
-      type: 'MARK_CURRENT_CYCLE_AS_FINISHED',
+      type: ActionTypes.MARK_CURRENT_CYCLE_AS_FINISHED,
       payload: {
         data: activeCycleId,
       },
@@ -116,7 +69,7 @@ export function CyclesContextProvider({
     consegamos distinguir uama action da outra, ou seja, enviamos um objeto
     enviamos um type e dentro desse type dizemos qual ação queremos realizar */
     dispatch({
-      type: 'ADD_NEW_CYCLE',
+      type: ActionTypes.ADD_NEW_CYCLE,
       payload: {
         newCycle,
       },
@@ -132,7 +85,7 @@ export function CyclesContextProvider({
   // parando o ciclo e colocando a hora do ciclo pausado na variavel interruptedDate
   function interruptCurrentCycle() {
     dispatch({
-      type: 'INTERRUPT_CURRENT_CYCLE',
+      type: ActionTypes.INTERRUPT_CURRENT_CYCLE,
       payload: {
         activeCycleId,
       },
