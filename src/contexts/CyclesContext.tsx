@@ -1,5 +1,10 @@
 import { ReactNode, createContext, useReducer, useState } from 'react'
-import { ActionTypes, Cycle, cyclesReducer } from '../reducers/cycles'
+import { Cycle, cyclesReducer } from '../reducers/cycles/reducer'
+import {
+  addNewCycleAction,
+  interruptCurrentCycleAction,
+  markCurrentCycleAsFinishedAction,
+} from '../reducers/cycles/actions'
 
 interface CreateCycleData {
   task: string
@@ -46,12 +51,7 @@ export function CyclesContextProvider({
   }
 
   function markCurrentCycleAsfinished() {
-    dispatch({
-      type: ActionTypes.MARK_CURRENT_CYCLE_AS_FINISHED,
-      payload: {
-        data: activeCycleId,
-      },
-    })
+    dispatch(markCurrentCycleAsFinishedAction())
   }
 
   /* data: dados dos nossos inputs do formulario */
@@ -68,12 +68,7 @@ export function CyclesContextProvider({
     /* dentro do dispatch enviamos alguma info q lá dentro do reducer
     consegamos distinguir uama action da outra, ou seja, enviamos um objeto
     enviamos um type e dentro desse type dizemos qual ação queremos realizar */
-    dispatch({
-      type: ActionTypes.ADD_NEW_CYCLE,
-      payload: {
-        newCycle,
-      },
-    })
+    dispatch(addNewCycleAction(newCycle))
 
     /* padrao de add estado
     Sempre q uma alteracao de estado depender do valor anterior
@@ -84,12 +79,7 @@ export function CyclesContextProvider({
 
   // parando o ciclo e colocando a hora do ciclo pausado na variavel interruptedDate
   function interruptCurrentCycle() {
-    dispatch({
-      type: ActionTypes.INTERRUPT_CURRENT_CYCLE,
-      payload: {
-        activeCycleId,
-      },
-    })
+    dispatch(interruptCurrentCycleAction())
   }
 
   return (
